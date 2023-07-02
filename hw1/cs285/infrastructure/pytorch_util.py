@@ -50,7 +50,7 @@ def build_mlp(
 
     layers = [nn.Linear(input_size, size)]
     layers.append(activation)
-    
+
     for _ in range(n_layers):
         layers.append(nn.Linear(size, size))
         layers.append(activation)
@@ -60,7 +60,7 @@ def build_mlp(
 
     model = nn.Sequential(*layers)
 
-    raise model
+    return model
 
 
 device = None
