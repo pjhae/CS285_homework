@@ -12,7 +12,7 @@ from cs285.infrastructure import utils
 
 # how many rollouts to save as videos to tensorboard
 MAX_NVIDEO = 2
-MAX_VIDEO_LEN = 40  # we overwrite this in the code below
+MAX_VIDEO_LEN = 200  # we overwrite this in the code below
 
 
 class RL_Trainer(object):
@@ -83,14 +83,13 @@ class RL_Trainer(object):
         :param start_relabel_with_expert: iteration at which to start relabel with expert
         :param expert_policy:
         """
-
+        
         # init vars at beginning of training
         self.total_envsteps = 0
         self.start_time = time.time()
 
         for itr in range(n_iter):
             print("\n\n********** Iteration %i ************"%itr)
-
             # decide if videos should be rendered/logged at this iteration
             if itr % self.params['video_log_freq'] == 0 and self.params['video_log_freq'] != -1:
                 self.log_video = True
