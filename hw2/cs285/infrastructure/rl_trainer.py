@@ -155,22 +155,17 @@ class RL_Trainer(object):
 
     def collect_training_trajectories(self, itr, initial_expertdata, collect_policy, batch_size):
         # TODO: GETTHIS from HW1
-        print("\nCollecting data to be used for training...")
-        if itr == 0:
-            with open(initial_expertdata, 'rb') as data:
-                loaded_paths = pickle.load(data)
-            return loaded_paths, 0, None
-
         paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, batch_size, self.params['ep_len'])
         train_video_paths = None
-        if self.log_video:
+        if self.logvideo:
             print('\nCollecting train rollouts to be used for saving videos...')
+
             train_video_paths = utils.sample_n_trajectories(self.env, collect_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
 
         return paths, envsteps_this_batch, train_video_paths
 
     def train_agent(self):
-        # TODO: GET THIS from HW1
+        # TODO: GETTHIS from HW1
         print('\nTraining agent using sampled data from replay buffer...')
         all_logs = []
         for train_step in range(self.params['num_agent_train_steps_per_iter']):

@@ -105,7 +105,11 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # through it. For example, you can return a torch.FloatTensor. You can also
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
-    def forward(self, observation: torch.FloatTensor):
+    def forward(self, observation):
+
+        observation = torch.Tensor(observation)
+        observation = observation.to(ptu.device)
+
         if self.discrete:
             logits = self.logits_na(observation)
             action_distribution = distributions.Categorical(logits=logits)
@@ -129,13 +133,13 @@ class MLPPolicyPG(MLPPolicy):
     def __init__(self, ac_dim, ob_dim, n_layers, size, **kwargs):
 
         super().__init__(ac_dim, ob_dim, n_layers, size, **kwargs)
-        self.baseline_loss = nn.MSELoss()
+        # self.baseline_loss = nn.MSELoss()
 
     def update(self, observations, actions, advantages, q_values=None):
         observations = ptu.from_numpy(observations)
         actions = ptu.from_numpy(actions)
         advantages = ptu.from_numpy(advantages)
-
+        
         # TODO: update the policy using policy gradient
         # HINT1: Recall that the expression that we want to MAXIMIZE
             # is the expectation over collected trajectories of:
@@ -145,8 +149,12 @@ class MLPPolicyPG(MLPPolicy):
         # HINT3: don't forget that `optimizer.step()` MINIMIZES a loss
         # HINT4: use self.optimizer to optimize the loss. Remember to
             # 'zero_grad' first
-
-        TODO
+        self.optimizer.zero_grad()
+        action_dist = self.forward(observations)
+        print(action_dist.log_prob(actions).requires_grad)
+        loss = -torch.sum(action_dist.log_prob(actions)*(advantages))
+        loss.backward()
+        self.optimizer.step()
 
         if self.nn_baseline:
             ## TODO: update the neural network baseline using the q_values as

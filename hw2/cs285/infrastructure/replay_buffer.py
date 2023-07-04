@@ -40,11 +40,13 @@ class ReplayBuffer(object):
             self.next_obs = np.concatenate([self.next_obs, next_observations])[-self.max_size:]
             self.terminals = np.concatenate([self.terminals, terminals])[-self.max_size:]
             self.concatenated_rews = np.concatenate([self.concatenated_rews, concatenated_rews])[-self.max_size:]
-            
+
             if isinstance(unconcatenated_rews, list):
                 self.unconcatenated_rews += unconcatenated_rews  # TODO keep only latest max_size around
+                self.unconcatenated_rews = self.unconcatenated_rews[-self.max_size:]
             else:
                 self.unconcatenated_rews.append(unconcatenated_rews)  # TODO keep only latest max_size around
+                self.unconcatenated_rews = self.unconcatenated_rews[-self.max_size:]
 
     ########################################
     ########################################
@@ -66,9 +68,11 @@ class ReplayBuffer(object):
         return self.obs[rand_indices], self.acs[rand_indices], self.concatenated_rews[rand_indices], self.next_obs[rand_indices], self.terminals[rand_indices]
 
     def sample_recent_data(self, batch_size=1, concat_rew=True):
-
-        if concat_rew:
+        # batch size 만큼 에피소드와 무관하게 뒤에서 자름
+        if concat_rew:  
             return self.obs[-batch_size:], self.acs[-batch_size:], self.concatenated_rews[-batch_size:], self.next_obs[-batch_size:], self.terminals[-batch_size:]
+        
+        # batch size 보다 크도록하는 최소의 에피소드만큼 뒤에서 자름(reward 자르지 않으려고)
         else:
             num_recent_rollouts_to_return = 0
             num_datapoints_so_far = 0
