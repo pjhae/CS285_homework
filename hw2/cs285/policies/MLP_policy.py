@@ -87,7 +87,15 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # query the policy with observation(s) to get selected action(s)
     def get_action(self, obs: np.ndarray) -> np.ndarray:
         # TODO: get this from HW1
-
+        if len(obs.shape) > 1:
+            observation = obs
+        else:
+            observation = obs[None]
+        dist = self.forward(observation)
+        action = dist.sample()
+       
+        return action.to('cpu').numpy()
+    
     # update/train this policy
     def update(self, observations, actions, **kwargs):
         raise NotImplementedError
@@ -103,6 +111,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             action_distribution = distributions.Categorical(logits=logits)
             return action_distribution
         else:
+            # multivariate 가우시안으로 policy modeling 이미 구현되어 있음
             batch_mean = self.mean_net(observation)
             scale_tril = torch.diag(torch.exp(self.logstd))
             batch_dim = batch_mean.shape[0]

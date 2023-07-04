@@ -42,6 +42,7 @@ class PGAgent(BaseAgent):
         # TODO: update the PG actor/policy using the given batch of data, and
         # return the train_log obtained from updating the policy
 
+
         # HINT1: use helper functions to compute qvals and advantages
         # HINT2: look at the MLPPolicyPG class for how to update the policy
             # and obtain a train_log

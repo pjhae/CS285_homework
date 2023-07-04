@@ -37,15 +37,10 @@ class ReplayBuffer(object):
         else:
             self.obs = np.concatenate([self.obs, observations])[-self.max_size:]
             self.acs = np.concatenate([self.acs, actions])[-self.max_size:]
-            self.next_obs = np.concatenate(
-                [self.next_obs, next_observations]
-            )[-self.max_size:]
-            self.terminals = np.concatenate(
-                [self.terminals, terminals]
-            )[-self.max_size:]
-            self.concatenated_rews = np.concatenate(
-                [self.concatenated_rews, concatenated_rews]
-            )[-self.max_size:]
+            self.next_obs = np.concatenate([self.next_obs, next_observations])[-self.max_size:]
+            self.terminals = np.concatenate([self.terminals, terminals])[-self.max_size:]
+            self.concatenated_rews = np.concatenate([self.concatenated_rews, concatenated_rews])[-self.max_size:]
+            
             if isinstance(unconcatenated_rews, list):
                 self.unconcatenated_rews += unconcatenated_rews  # TODO keep only latest max_size around
             else:
