@@ -93,7 +93,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             observation = obs[None]
         dist = self.forward(observation)
         action = dist.sample()
-       
+
         return action.to('cpu').numpy()
     
     # update/train this policy
@@ -133,7 +133,7 @@ class MLPPolicyPG(MLPPolicy):
     def __init__(self, ac_dim, ob_dim, n_layers, size, **kwargs):
 
         super().__init__(ac_dim, ob_dim, n_layers, size, **kwargs)
-        # self.baseline_loss = nn.MSELoss()
+        self.baseline_loss = nn.MSELoss()
 
     def update(self, observations, actions, advantages, q_values=None):
         observations = ptu.from_numpy(observations)
@@ -164,8 +164,22 @@ class MLPPolicyPG(MLPPolicy):
                 ## updating the baseline. Remember to 'zero_grad' first
             ## HINT2: You will need to convert the targets into a tensor using
                 ## ptu.from_numpy before using it in the loss
+            
+            self.baseline_optimizer.zero_grad()
+            q_mean = q_values.mean()
+            q_std  = q_values.std()
+            
+            q_normalized = (q_values-q_mean)/q_std
 
-            TODO
+            q_normalized = ptu.from_numpy(q_normalized)
+            q_predict = self.run_baseline_prediction(observations)
+            print("wow")
+            baseline_loss = self.baseline_loss(q_normalized, q_predict)
+
+            baseline_loss.backward()
+            self.baseline_optimizer.step()
+            
+            train_log['Baseline Loss'] = ptu.to_numpy(baseline_loss)
 
         train_log = {
             'Training Loss': ptu.to_numpy(loss),

@@ -94,14 +94,17 @@ class PGAgent(BaseAgent):
         # Estimate the advantage when nn_baseline is True,
         # by querying the neural network that you're using to learn the value function
         if self.nn_baseline:
-            values_unnormalized = self.actor.run_baseline_prediction(obs)
+            values_normalized = self.actor.run_baseline_prediction(obs)
             ## ensure that the value predictions and q_values have the same dimensionality
             ## to prevent silent broadcasting errors
-            assert values_unnormalized.ndim == q_values.ndim
+            assert values_normalized.ndim == q_values.ndim
             ## TODO: values were trained with standardized q_values, so ensure
                 ## that the predictions have the same mean and standard deviation as
                 ## the current batch of q_values
-            values = TODO
+            
+            q_mean = q_values.mean()
+            q_std  = q_values.std()
+            values = values_normalized*q_std + q_mean
 
             if self.gae_lambda is not None:
                 ## append a dummy T+1 value for simpler recursive calculation
@@ -123,18 +126,23 @@ class PGAgent(BaseAgent):
                         ## 0 otherwise.
                     ## HINT 2: self.gae_lambda is the lambda value in the
                         ## GAE formula
-                    pass
+                    
+                    if terminals[i] == True:
+                        advantages[i] == rews[i] - values[i]
+                    else:
+                        advantages[i] = (rews[i]+self.gamma*values[i+1]-values[i]) + self.gamma*self.gae_lambda*advantages[i+1]
+
                 # remove dummy advantage
                 advantages = advantages[:-1]
 
             else:
                 ## TODO: compute advantage estimates using q_values, and values as baselines
-                advantages = TODO
+                advantages = q_values - values
 
         # Else, just set the advantage to [Q]
         else:
             advantages = q_values.copy()
-            
+
         # Normalize the resulting advantages
         if self.standardize_advantages:
             mean = advantages.mean()
