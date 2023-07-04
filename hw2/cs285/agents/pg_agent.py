@@ -134,12 +134,12 @@ class PGAgent(BaseAgent):
         # Else, just set the advantage to [Q]
         else:
             advantages = q_values.copy()
-
+            
         # Normalize the resulting advantages
         if self.standardize_advantages:
-            ## TODO: standardize the advantages to have a mean of zero
-            ## and a standard deviation of one
-            advantages = TODO
+            mean = advantages.mean()
+            std = advantages.std()
+            advantages = (advantages - mean) / std
 
         return advantages
 

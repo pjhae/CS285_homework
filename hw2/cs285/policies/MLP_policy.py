@@ -151,11 +151,10 @@ class MLPPolicyPG(MLPPolicy):
             # 'zero_grad' first
         self.optimizer.zero_grad()
         action_dist = self.forward(observations)
-        print(action_dist.log_prob(actions).requires_grad)
         loss = -torch.sum(action_dist.log_prob(actions)*(advantages))
         loss.backward()
         self.optimizer.step()
-
+ 
         if self.nn_baseline:
             ## TODO: update the neural network baseline using the q_values as
             ## targets. The q_values should first be normalized to have a mean
