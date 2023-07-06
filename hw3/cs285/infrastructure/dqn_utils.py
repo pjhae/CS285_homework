@@ -80,7 +80,7 @@ def get_env_kwargs(env_name):
     return kwargs
 
 
-def create_lander_q_network(ob_dim, num_actions):
+def create_lander_q_network(ob_dim, num_actions): # for Lunar lander(state input)
     return nn.Sequential(
         nn.Linear(ob_dim, 64),
         nn.ReLU(),
@@ -103,7 +103,7 @@ class PreprocessAtari(nn.Module):
         return x / 255.
 
 
-def create_atari_q_network(ob_dim, num_actions):
+def create_atari_q_network(ob_dim, num_actions): # for Atari(image input)
     return nn.Sequential(
         PreprocessAtari(),
         nn.Conv2d(in_channels=4, out_channels=32, kernel_size=8, stride=4),
@@ -499,7 +499,8 @@ class MemoryOptimizedReplayBuffer(object):
         at index idx. The reason `store_frame` and `store_effect` is broken
         up into two functions is so that once can call `encode_recent_observation`
         in between.
-
+        # 입력으로 sequential image를 쓰니깐, 제일 최근 s를 buffer에 넣고 과거의 n개와 concat해서 버퍼에서 뽑아야 pi를 통해 a를 출력하므로,
+          s를 a,r,done과 동시에 buffer에 넣지 않고 구분해서 넣음.
         Paramters
         ---------
         idx: int

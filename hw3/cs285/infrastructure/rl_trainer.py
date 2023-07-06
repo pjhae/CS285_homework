@@ -228,8 +228,10 @@ class RL_Trainer(object):
             train_log = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
         return all_logs
+    
     ####################################
     ####################################
+    
     def perform_dqn_logging(self, all_logs):
         last_log = all_logs[-1]
 

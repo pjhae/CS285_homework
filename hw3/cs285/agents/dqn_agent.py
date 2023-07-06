@@ -32,6 +32,7 @@ class DQNAgent(object):
         self.t = 0
         self.num_param_updates = 0
 
+    # sequential image로 a를 얻어내기 때문에 일반적인 add_함수 말고 step_env 안에서 별도의 방식으로 add 해주자
     def add_to_replay_buffer(self, paths):
         pass
 
@@ -51,11 +52,13 @@ class DQNAgent(object):
         eps = self.exploration.value(self.t)
 
         # TODO use epsilon greedy exploration when selecting action
+        # with probability eps (see np.random.random())
+        # OR if your current step number (see self.t) is less that self.learning_starts
         perform_random_action = TODO
+
         if perform_random_action:
             # HINT: take random action 
-                # with probability eps (see np.random.random())
-                # OR if your current step number (see self.t) is less that self.learning_starts
+
             action = TODO
         else:
             # HINT: Your actor will take in multiple previous observations ("frames") in order
@@ -95,6 +98,7 @@ class DQNAgent(object):
             log = self.critic.update(
                 TODO
             )
+
 
             # TODO update the target network periodically 
             # HINT: your critic already has this functionality implemented
