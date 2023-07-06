@@ -32,7 +32,7 @@ class DQNAgent(object):
         self.t = 0
         self.num_param_updates = 0
 
-    # sequential image로 a를 얻어내기 때문에 일반적인 add_함수 말고 step_env 안에서 별도의 방식으로 add 해주자
+    # sequential image로 a를 얻어내기 때문에 일반적인 add 함수 말고 step_env 안에서 별도의 방식으로 add 해주자
     def add_to_replay_buffer(self, paths):
         pass
 
@@ -47,25 +47,24 @@ class DQNAgent(object):
         # TODO store the latest observation ("frame") into the replay buffer
         # HINT: the replay buffer used here is `MemoryOptimizedReplayBuffer`
             # in dqn_utils.py
-        self.replay_buffer_idx = TODO
+        self.replay_buffer_idx = self.replay_buffer.store_effect(self.last_obs)
 
         eps = self.exploration.value(self.t)
 
         # TODO use epsilon greedy exploration when selecting action
         # with probability eps (see np.random.random())
         # OR if your current step number (see self.t) is less that self.learning_starts
-        perform_random_action = TODO
+        perform_random_action = (np.random.random() < eps) or (self.t < self.learning_starts)
 
         if perform_random_action:
             # HINT: take random action 
-
-            action = TODO
+            action = self.env.action_space.sample()
         else:
             # HINT: Your actor will take in multiple previous observations ("frames") in order
                 # to deal with the partial observability of the environment. Get the most recent 
                 # `frame_history_len` observations using functionality from the replay buffer,
                 # and then use those observations as input to your actor. 
-            action = TODO
+            action = self.actor.get_action(self.replay_buffer.encode_recent_observation())
         
         # TODO take a step in the environment using the action from the policy
         # HINT1: remember that self.last_obs must always point to the newest/latest observation
