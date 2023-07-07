@@ -71,6 +71,7 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
 
                 else:
                     image_obs.append(env.render(mode=render_mode))
+                   
 
             if 'human' in render_mode:
                 env.render(mode=render_mode)

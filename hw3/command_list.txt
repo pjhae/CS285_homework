@@ -10,3 +10,4 @@ python cs285/scripts/run_hw3_dqn.py --env_name LunarLander-v3 --exp_name q2_doub
 python cs285/scripts/run_hw3_dqn.py --env_name LunarLander-v3 --exp_name q2_doubledqn_2 --double_q --seed 2
 python cs285/scripts/run_hw3_dqn.py --env_name LunarLander-v3 --exp_name q2_doubledqn_3 --double_q --seed 3
 
+python cs285/scripts/run_hw3_actor_critic.py --env_name CartPole-v0 -n 100 -b 1000 --exp_name q4_1_100 -ntu 10 -ngsptu 10 --video_log_freq 100
