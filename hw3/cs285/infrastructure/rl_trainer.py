@@ -157,6 +157,7 @@ class RL_Trainer(object):
             # collect trajectories, to be used for training
             if isinstance(self.agent, DQNAgent):
                 # only perform an env step and add to replay buffer for DQN
+                self.env.render()
                 self.agent.step_env()
                 envsteps_this_batch = 1
                 train_video_paths = None
