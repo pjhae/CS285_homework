@@ -99,7 +99,7 @@ class DQNCritic(BaseCritic):
         return {
             'Training Loss': ptu.to_numpy(loss),
         }
-
+ 
     def update_target_network(self):
         for target_param, param in zip(
                 self.q_net_target.parameters(), self.q_net.parameters()
