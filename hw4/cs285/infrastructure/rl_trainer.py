@@ -141,8 +141,10 @@ class RL_Trainer(object):
                 self.logmetrics = False
 
             use_batchsize = self.params['batch_size']
+
             if itr == 0:
                 use_batchsize = self.params['batch_size_initial']
+
             paths, envsteps_this_batch, train_video_paths = (
                 self.collect_training_trajectories(
                     itr, initial_expertdata, collect_policy, use_batchsize)
@@ -189,14 +191,23 @@ class RL_Trainer(object):
             train_video_paths: paths which also contain videos for visualization purposes
         """
         # TODO: get this from Piazza
+        paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, num_transitions_to_sample, self.params['ep_len'])
+        train_video_paths = None
+        if self.logvideo:
+            print('\nCollecting train rollouts to be used for saving videos...')
+            train_video_paths = utils.sample_n_trajectories(self.env, collect_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
 
         return paths, envsteps_this_batch, train_video_paths
 
     def train_agent(self):
-    # TODO: get this from Piazza
-
-    ####################################
-    ####################################
+        # TODO: get this from Piazza
+        all_logs = []
+        for train_step in range(self.params['num_agent_train_steps_per_iter']):
+            ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self.agent.sample(self.params['train_batch_size'])
+            train_log = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
+            all_logs.append(train_log)
+        return all_logs
+    
     def perform_logging(self, itr, paths, eval_policy, train_video_paths, all_logs):
 
         last_log = all_logs[-1]
@@ -280,7 +291,7 @@ class RL_Trainer(object):
         # plot the predictions
         self.fig.clf()
         for i in range(ob_dim):
-            plt.subplot(ob_dim/2, 2, i+1)
+            plt.subplot(int(ob_dim/2), 2, i+1)
             plt.plot(true_states[:,i], 'g')
             plt.plot(pred_states[:,i], 'r')
         self.fig.suptitle('MPE: ' + str(mpe))
