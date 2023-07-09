@@ -62,8 +62,6 @@ class MPCPolicy(BasePolicy):
             # Begin with randomly selected actions, then refine the sampling distribution
             # iteratively as described in Section 3.3, "Iterative Random-Shooting with Refinement" of
             # https://arxiv.org/pdf/1909.11652.pdf
-            mean = np.zeros(self.ac_dim)
-            cov = np.diag([1]*self.ac_dim)
 
             for i in range(self.cem_iterations):
                 # TODO(Q5): 
