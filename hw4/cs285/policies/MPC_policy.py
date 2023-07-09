@@ -62,20 +62,37 @@ class MPCPolicy(BasePolicy):
             # Begin with randomly selected actions, then refine the sampling distribution
             # iteratively as described in Section 3.3, "Iterative Random-Shooting with Refinement" of
             # https://arxiv.org/pdf/1909.11652.pdf
+            mean = np.zeros(self.ac_dim)
+            cov = np.diag([1]*self.ac_dim)
+
             for i in range(self.cem_iterations):
-                # - Sample candidate sequences from a Gaussian with the current
-                #   elite mean and variance
-                #     (Hint: remember that for the first iteration, we instead sample
-                #      uniformly at random just like we do for random-shooting)
-                # - Get the top `self.cem_num_elites` elites
-                #     (Hint: what existing function can we use to compute rewards for
-                #      our candidate sequences in order to rank them?)
-                # - Update the elite mean and variance
-                pass
+                # TODO(Q5): 
+                # Hint: remember that for the first iteration, we instead sample
+                # uniformly at random just like we do for random-shooting
+                if i==0:
+                    candidate_action_sequences = self.low + (self.high - self.low) * np.random.rand(num_sequences, horizon, self.ac_dim)
+                    acs_mean = np.mean(candidate_action_sequences, axis=0)
+                    acs_std = np.std(candidate_action_sequences, axis=0)
+                else:
+                    # Sample candidate sequences from a Gaussian with the current
+                    # elite mean and variance
+                    candidate_action_sequences = np.random.normal(acs_mean, acs_std, (num_sequences, horizon, self.ac_dim))
+                
+                # Hint: what existing function can we use to compute rewards for
+                # our candidate sequences in order to rank them?
+                predicted_rewards = self.evaluate_candidate_sequences(candidate_action_sequences, obs)
+
+                # Get the top `self.cem_num_elites` elites
+                idx = np.argpartition(predicted_rewards, -self.cem_num_elites)[-self.cem_num_elites:]
+                elite_action_sequences  = candidate_action_sequences[idx]
+
+                # Update the elite mean and variance
+                acs_mean = self.cem_alpha * np.mean(elite_action_sequences, axis=0) + (1 - self.cem_alpha) * acs_mean
+                acs_std = self.cem_alpha * np.std(elite_action_sequences, axis=0) + (1 - self.cem_alpha) * acs_std
 
             # TODO(Q5): Set `cem_action` to the appropriate action sequence chosen by CEM.
             # The shape should be (horizon, self.ac_dim)
-            cem_action = None
+            cem_action = acs_mean
 
             return cem_action[None]
         else:
@@ -87,13 +104,15 @@ class MPCPolicy(BasePolicy):
         #
         # Then, return the mean predictions across all ensembles.
         # Hint: the return value should be an array of shape (N,)
+        predicted_ensembled_reward = np.zeros(self.N)
         for model in self.dyn_models:
-            pass
+            predicted_ensembled_reward += self.calculate_sum_of_rewards(obs, candidate_action_sequences, model)
 
-        return TODO
+        return predicted_ensembled_reward/len(self.dyn_models)
 
     def get_action(self, obs):
-        if self.data_statistics is None:
+        # at 1st iter, data_statistics is None -> random action
+        if self.data_statistics is None: 
             return self.sample_action_sequences(num_sequences=1, horizon=1)[0]
 
         # sample random actions (N x horizon)
@@ -105,10 +124,10 @@ class MPCPolicy(BasePolicy):
             return candidate_action_sequences[0][0][None]
         else:
             predicted_rewards = self.evaluate_candidate_sequences(candidate_action_sequences, obs)
-
-            # pick the action sequence and return the 1st element of that sequence
-            best_action_sequence = None  # TODO (Q2)
-            action_to_take = None  # TODO (Q2)
+            # TODO (Q2) pick the action sequence and return the 1st element of that sequence
+            idx_best = np.argmax(predicted_rewards)
+            best_action_sequence = candidate_action_sequences[idx_best,:,:]  
+            action_to_take = best_action_sequence[0]
             return action_to_take[None]  # Unsqueeze the first index
 
     def calculate_sum_of_rewards(self, obs, candidate_action_sequences, model):
@@ -124,7 +143,6 @@ class MPCPolicy(BasePolicy):
         :return: numpy array with the sum of rewards for each action sequence.
         The array should have shape [N].
         """
-        sum_of_rewards = None  # TODO (Q2)
         # For each candidate action sequence, predict a sequence of
         # states for each dynamics model in your ensemble.
         # Once you have a sequence of predicted states from each model in
@@ -136,4 +154,12 @@ class MPCPolicy(BasePolicy):
         # Hint: Remember that the model can process observations and actions
         #       in batch, which can be much faster than looping through each
         #       action sequence.
+        # TODO (Q2)
+        sum_of_rewards = np.zeros(self.N)
+        obs = np.array([obs] * self.N)
+
+        for i in range(self.horizon):
+            sum_of_rewards += self.env.get_reward(obs, candidate_action_sequences[:,i,:])[0]
+            obs = model.get_prediction(obs, candidate_action_sequences[:,i,:], self.data_statistics)
+
         return sum_of_rewards
