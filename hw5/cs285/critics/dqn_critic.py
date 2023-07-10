@@ -67,11 +67,8 @@ class DQNCritic(BaseCritic):
         q_t_values = torch.gather(qa_t_values, 1, ac_na.unsqueeze(1)).squeeze(1)
         qa_tp1_values = self.q_net_target(next_ob_no)
 
-        if self.double_q:
-            next_actions = self.q_net(next_ob_no).argmax(dim=1)
-            q_tp1 = torch.gather(qa_tp1_values, 1, next_actions.unsqueeze(1)).squeeze(1)
-        else:
-            q_tp1, _ = qa_tp1_values.max(dim=1)
+        next_actions = self.q_net(next_ob_no).argmax(dim=1)
+        q_tp1 = torch.gather(qa_tp1_values, 1, next_actions.unsqueeze(1)).squeeze(1)
 
         target = reward_n + self.gamma * q_tp1 * (1 - terminal_n)
         target = target.detach()
