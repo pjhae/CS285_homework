@@ -43,7 +43,22 @@ class CQLCritic(BaseCritic):
         self.cql_alpha = hparams['cql_alpha']
 
     def dqn_loss(self, ob_no, ac_na, next_ob_no, reward_n, terminal_n):
-        """ Implement DQN Loss """
+        # TODO Implement DQN Loss 
+        qa_t_values = self.q_net(ob_no)
+        q_t_values = torch.gather(qa_t_values, 1, ac_na.unsqueeze(1)).squeeze(1)
+        qa_tp1_values = self.q_net_target(next_ob_no)
+
+        if self.double_q:
+            q_tp1 = torch.gather(qa_tp1_values, 1, torch.argmax(qa_t_values,1).unsqueeze(1)).squeeze(1)
+        else:
+            q_tp1, _ = qa_tp1_values.max(dim=1)
+
+        target = reward_n + self.gamma * q_tp1 * (1 - terminal_n)
+        target = target.detach()
+
+        assert q_t_values.shape == target.shape
+
+        loss = self.loss(q_t_values, target)
 
         return loss, qa_t_values, q_t_values
 
@@ -71,16 +86,23 @@ class CQLCritic(BaseCritic):
         terminal_n = ptu.from_numpy(terminal_n)
 
         # Compute the DQN Loss 
-        loss, qa_t_values, q_t_values = self.dqn_loss(
+        dqn_loss, qa_t_values, q_t_values = self.dqn_loss(
             ob_no, ac_na, next_ob_no, reward_n, terminal_n
             )
         
         # CQL Implementation
         # TODO: Implement CQL as described in the pdf and paper
         # Hint: After calculating cql_loss, augment the loss appropriately
-        cql_loss = None
-        q_t_logsumexp = None
+        
+        q_t_logsumexp = torch.logsumexp(qa_t_values, 1)
+        cql_loss = self.cql_alpha*torch.mean(q_t_logsumexp - q_t_values, 0)
+        
+        loss = dqn_loss + cql_loss
 
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        
         info = {'Training Loss': ptu.to_numpy(loss)}
 
         # TODO: Uncomment these lines after implementing CQL
