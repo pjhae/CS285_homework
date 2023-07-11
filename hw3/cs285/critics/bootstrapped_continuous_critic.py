@@ -93,7 +93,7 @@ class BootstrappedContinuousCritic(nn.Module, BaseCritic):
         
         for i in range(self.num_target_updates):
             v_target = reward_n + self.gamma * self.forward(next_ob_no) * (1 - terminal_n)
-            v_target = v_target.detach() # Important!
+            v_target = v_target.detach() # IMPORTANT
             for j in range(self.num_grad_steps_per_target_update):
                 self.optimizer.zero_grad()
                 loss = self.loss(v_target, self.forward(ob_no))
