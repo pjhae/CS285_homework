@@ -169,7 +169,7 @@ class MLPPolicyPG(MLPPolicy):
             q_mean = q_values.mean()
             q_std  = q_values.std()
             
-            q_normalized = (q_values-q_mean)/(q_std + 1e-6)
+            q_normalized = (q_values-q_mean)/(q_std + 1e-8)
             q_normalized = ptu.from_numpy(q_normalized)
 
             q_predict = self.baseline(observations).squeeze()
