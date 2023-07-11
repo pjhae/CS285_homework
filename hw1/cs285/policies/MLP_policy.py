@@ -122,9 +122,13 @@ class MLPPolicySL(MLPPolicy):
     ):
         # TODO: update the policy and return the loss
         self.optimizer.zero_grad()
+
         actions = torch.tensor(actions, dtype=torch.int if self.discrete else torch.float64, device=ptu.device)
         action_dist = self.forward(observations)
+
+        # Likelihood loss
         loss = -action_dist.log_prob(actions).mean()
+
         loss.backward()
         self.optimizer.step()
         return {

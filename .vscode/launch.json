@@ -1,0 +1,20 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "args" : ["--env_name", "HalfCheetah-v2", "--ep_len", "150", 
+            "--discount", "0.95", "-n", "100", "-l", "2", "-s", "32", "-b", "10000", "-lr", "0.005",
+            "-rtg", "--nn_baseline", "--exp_name", "q4_search_b10000_lr0.005_rtg_nnbaseline",],
+            "console": "integratedTerminal",
+            "justMyCode": false
+            
+        }
+    ]
+}
