@@ -69,7 +69,6 @@ class AWACAgent(DQNAgent):
         
         # TODO Calculate Value Function Estimate given current observation
         # You may find it helpful to utilze get_qvals defined above
-
         dist = self.awac_actor(ob_no)
 
         if self.agent_params['discrete']:
